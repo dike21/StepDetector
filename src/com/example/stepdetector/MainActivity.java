@@ -6,16 +6,23 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import com.example.stepdetector.R;
 
 public class MainActivity extends Activity implements SensorEventListener {
-	private float A;
+	private float A,B;
 	private TextView textView;
 	private Button button;
 	private SensorManager mSensorManager = null;
@@ -25,6 +32,12 @@ public class MainActivity extends Activity implements SensorEventListener {
 	float accelFilter[] = new float[3];
 	double temp;
 	boolean lookingForMin,pause;
+	private static final String FILENAME = "filtered_acc_data.txt";
+	private static final String FILENAME2 = "peak_data.txt";
+	String str = "";
+	String pts = "";
+	long beginning;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -35,6 +48,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main_activity);
 
+		beginning=System.currentTimeMillis();
 		lookingForMin=true;//we start trying to find a minimum
 		stepList=new StepList();
 		textView = (TextView)findViewById(R.id.textview);
@@ -43,6 +57,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 			@Override
 			public void onClick(View v) {
 				pause=!pause;
+				writeToFile(str);
+				writeToFile(pts);
 			}
 		});
 
@@ -63,6 +79,9 @@ public class MainActivity extends Activity implements SensorEventListener {
 	}
 
 	public void onAccelerometerChanged(float accelX, float accelY, float accelZ) {
+		B=(accelX * accelX + accelY * accelY + accelZ * accelZ);//acc 3D
+		temp =(double) B;
+		B = (float) Math.sqrt(temp);
 		// low pass filter
 		accelFilter[0] = accelFilter[0]+(ALPHA * (accelX - accelFilter[0]));
 		accelFilter[1] = accelFilter[1]+(ALPHA * (accelY - accelFilter[1]));
@@ -82,6 +101,11 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 		//add point
 		stepList.addPoint(A, System.currentTimeMillis());
+
+		convertToString((float)(System.currentTimeMillis()-beginning)/1000f,A,B);
+		if(stepList.getLastStep()!=null){
+			peakTimeString((float)(stepList.getLastStep().getPeakTime()-beginning)/1000f);
+		}
 
 		if(!pause)
 			textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\n");
@@ -120,5 +144,33 @@ public class MainActivity extends Activity implements SensorEventListener {
 		// Remove the TimerTask from the list
 		//fuseTimer.cancel();
 		finish();
+	}
+	public void convertToString(float a, float b, float c){
+
+		str += String.valueOf(a)+" ";
+		str += String.valueOf(b)+" ";
+		str += String.valueOf(c)+"\n";
+	}
+	public void peakTimeString(float a){
+		pts += String.valueOf(a)+"\n";
+	}
+
+	public void writeToFile(String path){
+		File file;
+		if(path.equals("str"))
+			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME);
+		else {
+
+			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME2);
+		}
+		try{
+			file.createNewFile();
+			OutputStream fo = new FileOutputStream(file);              
+			fo.write(path.getBytes());
+			fo.close();
+		}
+		catch(IOException e){
+			Log.e("acc", "File write failed: "+e.toString());
+		}
 	}
 } 

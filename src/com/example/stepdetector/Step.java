@@ -24,4 +24,7 @@ public class Step {
 	public float getPeak() {
 		return peak;
 	}
+	public long getPeakTime() {
+		return peakTime;
+	}
 }
