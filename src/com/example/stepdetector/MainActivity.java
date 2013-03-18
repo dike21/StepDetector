@@ -1,7 +1,6 @@
 package com.example.stepdetector;
 
 import android.app.Activity; 
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,7 +12,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import java.util.List;
-//import java.util.Timer;
 import com.example.stepdetector.R;
 
 public class MainActivity extends Activity implements SensorEventListener {
@@ -22,11 +20,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private Button button;
 	private SensorManager mSensorManager = null;
 	private StepList stepList;
-	// accelerometer vector
 	static final float ALPHA = 0.35f;
-	//private Timer fuseTimer = new Timer();
-	Sensor accelerometer;//, linear_accelerometer;
-	float lastA,min,max;
+	Sensor accelerometer;
 	float accelFilter[] = new float[3];
 	double temp;
 	boolean lookingForMin,pause;
@@ -79,30 +74,17 @@ public class MainActivity extends Activity implements SensorEventListener {
 		accelFilter[2] = accelZ;*/
 
 		onFilteredAccelerometerChanged(accelFilter[0], accelFilter[1], accelFilter[2]);
-		lastA=accelFilter[0]*accelFilter[0]+accelFilter[1]*accelFilter[1]+accelFilter[2]*accelFilter[2];
-		temp =(double) lastA;
-		lastA = (float)Math.sqrt(temp);
 	}
 	void onFilteredAccelerometerChanged(float x, float y, float z){
 		A=(x * x + y * y + z * z);//acc 3D
 		temp =(double) A;
 		A = (float) Math.sqrt(temp);
 
-		if(lookingForMin){
-			if(A>lastA){
-				min=lastA;
-				stepList.addPoint(min, System.currentTimeMillis(), false);
-			}
-		}
-		else{//looking for max
-			if(A<lastA){
-				max=lastA;
-				stepList.addPoint(max, System.currentTimeMillis(), true);
-			}
-		}
+		//add point
+		stepList.addPoint(A, System.currentTimeMillis());
+
 		if(!pause)
-			textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\nLast A: "+String.valueOf(lastA));
-		lookingForMin=!lookingForMin;
+			textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\n");
 	}
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}

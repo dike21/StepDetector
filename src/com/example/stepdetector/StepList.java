@@ -3,9 +3,9 @@ package com.example.stepdetector;
 public class StepList {
 	private Step[] step;
 	private int nb,nbStep;
-	private boolean start;
-	private float min, max;
-	private long minTime, maxTime;
+	private boolean start,lookingForMax;
+	private float min, max, lastA;
+	private long minTime, maxTime, lastTime;
 
 	public StepList(){
 		nbStep=0;
@@ -34,36 +34,34 @@ public class StepList {
 			return null;
 		}
 	}
-	void addPoint(float point, long time, boolean maxBoolean) {
-		// TODO Auto-generated method stub
+	void addPoint(float point, long time) {
 		if(start){//it's a minimum
 			min=point;
 			minTime=time;
+			lastA=point;
 			start=!start;
+			lookingForMax=false;
 		}
 		else{
-			if(maxBoolean){
-				if(point-min>0.2&&point-min<20){
-					max=point;
-					maxTime=time;
-				}
-				else{
-					System.out.println("point:"+String.valueOf(point)+"\nmin:"+String.valueOf(min)+"\n");
+			if(lookingForMax){
+				if(point<lastA&&lastA-min>1.5&&lastA-min<20){
+					max=lastA;
+					maxTime=lastTime;
 				}
 			}
-			else{
-				System.out.println("min time:"+String.valueOf(minTime)+"\n" +
-						"max time:"+String.valueOf(maxTime)+"\n" +
-						"time:"+String.valueOf(time)+"\n" +
-						"min:"+String.valueOf(min)+"\n" +
-						"max:"+String.valueOf(max)+"\n" +
-						"point:"+String.valueOf(point)+"\n\n");
-				if(minTime<maxTime&&maxTime<time&&time-minTime<1200&&max-point>2&&max-point<20){//calibration here! (maybe add a minimum threshold for time-mintime
-					addStep(time-minTime, maxTime, min, max);
+			else{//looking for min
+				if(point>lastA&&minTime<maxTime&&maxTime<lastTime&&lastTime-minTime<1000&&max-lastA>1.5&&max-lastA<20){//calibration here! (maybe add a minimum threshold for time-mintime
+					addStep(lastTime-minTime, maxTime, min, max);
+					min=lastA;
+					minTime=lastTime;
 				}
-				min=point;
-				minTime=time;
 			}
+		}
+		lookingForMax=!lookingForMax;
+		lastTime=time;
+		lastA=point;
+		if(lastTime-minTime>1000){
+			start=true;
 		}
 	}
 	public String getString() {
