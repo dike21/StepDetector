@@ -27,16 +27,16 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private Button button;
 	private SensorManager mSensorManager = null;
 	private StepList stepList;
-	static final float ALPHA = 0.35f;
+	static final float ALPHA = 0.45f;
 	Sensor accelerometer;
 	float accelFilter[] = new float[3];
 	double temp;
 	boolean lookingForMin,pause;
-	private static final String FILENAME = "filtered_acc_data.txt";
+	private static final String FILENAME = "acc_data.txt";
 	private static final String FILENAME2 = "peak_data.txt";
 	String str = "";
-	String pts = "";
-	long beginning;
+	static String pts = "";
+	static long beginning;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -103,9 +103,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 		stepList.addPoint(A, System.currentTimeMillis());
 
 		convertToString((float)(System.currentTimeMillis()-beginning)/1000f,A,B);
-		if(stepList.getLastStep()!=null){
-			peakTimeString((float)(stepList.getLastStep().getPeakTime()-beginning)/1000f);
-		}
 
 		if(!pause)
 			textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\n");
@@ -151,16 +148,15 @@ public class MainActivity extends Activity implements SensorEventListener {
 		str += String.valueOf(b)+" ";
 		str += String.valueOf(c)+"\n";
 	}
-	public void peakTimeString(float a){
+	public static void peakTimeString(float a){
 		pts += String.valueOf(a)+"\n";
 	}
 
 	public void writeToFile(String path){
 		File file;
-		if(path.equals("str"))
+		if(path==str)
 			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME);
 		else {
-
 			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME2);
 		}
 		try{
@@ -172,5 +168,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 		catch(IOException e){
 			Log.e("acc", "File write failed: "+e.toString());
 		}
+	}
+	public static long getBeginning() {
+		return beginning;
 	}
 } 

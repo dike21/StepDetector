@@ -7,9 +7,12 @@ public class StepList {
 	private float min, max, lastA;
 	private long minTime, maxTime, lastTime;
 	private static final int MAX_STEP_DURATION = 1000;
-	private static final int MIN_DELTA_A = 1;
+	private static final float MIN_DELTA_A = 1.2f;
 	private static final int MAX_DELTA_A = 20;
-	
+	private static final int MIN_STEP_DURATION = 400;
+
+	String pts;
+
 	public StepList(){
 		nbStep=0;
 		start=true;
@@ -29,6 +32,7 @@ public class StepList {
 			step[2].setStepParams(d, pt, v, p);
 		}
 		nbStep++;
+		MainActivity.peakTimeString((float)(pt-MainActivity.getBeginning())/1000f);
 	}
 	Step getLastStep(){
 		if(nb!=0)
@@ -48,8 +52,16 @@ public class StepList {
 		else{
 			if(lookingForMax){
 				if(point<lastA&&lastA-min>MIN_DELTA_A&&lastA-min<MAX_DELTA_A){
-					max=lastA;
-					maxTime=lastTime;
+					if(nbStep!=0){
+						if(lastTime-getLastStep().getPeakTime()>MIN_STEP_DURATION){
+							max=lastA;
+							maxTime=lastTime;
+						}
+					}
+					else{
+						max=lastA;
+						maxTime=lastTime;
+					}
 				}
 			}
 			else{//looking for min
@@ -76,5 +88,8 @@ public class StepList {
 	}
 	public int getNbStep() {
 		return nbStep;
+	}
+	public void peakTimeString(float a){
+		pts += String.valueOf(a)+"\n";
 	}
 }
