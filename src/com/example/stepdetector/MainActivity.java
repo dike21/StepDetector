@@ -148,8 +148,9 @@ public class MainActivity extends Activity implements SensorEventListener {
 		str += String.valueOf(b)+" ";
 		str += String.valueOf(c)+"\n";
 	}
-	public static void peakTimeString(float a){
-		pts += String.valueOf(a)+"\n";
+	public static void peakTimeString(float a, float b){
+		pts += String.valueOf(a)+" ";
+		pts += String.valueOf(b)+"\n";
 	}
 
 	public void writeToFile(String path){

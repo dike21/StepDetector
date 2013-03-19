@@ -32,7 +32,6 @@ public class StepList {
 			step[2].setStepParams(d, pt, v, p);
 		}
 		nbStep++;
-		MainActivity.peakTimeString((float)(pt-MainActivity.getBeginning())/1000f);
 	}
 	Step getLastStep(){
 		if(nb!=0)
@@ -45,9 +44,9 @@ public class StepList {
 		if(start){//it's a minimum
 			min=point;
 			minTime=time;
-			lastA=point;
+			//lastA=point;
 			start=!start;
-			lookingForMax=false;
+			lookingForMax=true;
 		}
 		else{
 			if(lookingForMax){
@@ -62,22 +61,30 @@ public class StepList {
 						max=lastA;
 						maxTime=lastTime;
 					}
+					lookingForMax=!lookingForMax;
+					MainActivity.peakTimeString((float)(lastTime-MainActivity.getBeginning())/1000f,lastA);
 				}
 			}
 			else{//looking for min
 				if(point>lastA&&minTime<maxTime&&maxTime<lastTime&&lastTime-minTime<MAX_STEP_DURATION&&max-lastA>MIN_DELTA_A&&max-lastA<MAX_DELTA_A){//calibration here! (maybe add a minimum threshold for time-mintime
 					addStep(lastTime-minTime, maxTime, min, max);
+					MainActivity.peakTimeString((float)(lastTime-MainActivity.getBeginning())/1000f,lastA);
 					min=lastA;
 					minTime=lastTime;
+					lookingForMax=!lookingForMax;
+				}
+				else if(point>lastA){
+					min=lastA;
+					minTime=lastTime;
+					lookingForMax=!lookingForMax;
 				}
 			}
 		}
-		lookingForMax=!lookingForMax;
 		lastTime=time;
 		lastA=point;
-		if(lastTime-minTime>MAX_STEP_DURATION){
+		/*if(lastTime-minTime>MAX_STEP_DURATION){
 			start=true;
-		}
+		}*/
 	}
 	public String getString() {
 		return "\nmin time:"+String.valueOf(minTime)+"\n" +
