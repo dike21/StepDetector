@@ -23,17 +23,17 @@ import com.example.stepdetector.R;
 
 public class MainActivity extends Activity implements SensorEventListener {
 	private float A,B;
-	private TextView textView;
 	private Button button;
 	private SensorManager mSensorManager = null;
 	private StepList stepList;
+	private TextView textView;
 	static final float ALPHA = 0.45f;
 	Sensor accelerometer;
 	float accelFilter[] = new float[3];
 	double temp;
-	boolean lookingForMin,pause;
-	private static final String FILENAME = "acc_data.txt";
-	private static final String FILENAME2 = "peak_data.txt";
+	private static final String FILENAME = "acc_data";
+	private static final String FILENAME2 = "peak_data";
+	private int filenameNb;
 	String str = "";
 	static String pts = "";
 	static long beginning;
@@ -48,17 +48,20 @@ public class MainActivity extends Activity implements SensorEventListener {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main_activity);
 
+		textView=(TextView)findViewById(R.id.textview);
 		beginning=System.currentTimeMillis();
-		lookingForMin=true;//we start trying to find a minimum
 		stepList=new StepList();
-		textView = (TextView)findViewById(R.id.textview);
 		button = (Button)findViewById(R.id.button);
 		button.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				pause=!pause;
-				writeToFile(str);
-				writeToFile(pts);
+				writeToFile(FILENAME+String.valueOf(filenameNb)+".txt");
+				writeToFile(FILENAME2+String.valueOf(filenameNb)+".txt");
+				beginning=System.currentTimeMillis();
+				str="";
+				pts="";
+				filenameNb++;
+				stepList=new StepList();
 			}
 		});
 
@@ -103,9 +106,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 		stepList.addPoint(A, System.currentTimeMillis());
 
 		convertToString((float)(System.currentTimeMillis()-beginning)/1000f,A,B);
-
-		if(!pause)
-			textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\n");
+		textView.setText(String.valueOf(stepList.getNbStep())+stepList.getString()+"\ncurrent time:"+String.valueOf(System.currentTimeMillis())+"\n");
 	}
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
@@ -155,15 +156,19 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 	public void writeToFile(String path){
 		File file;
-		if(path==str)
-			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME);
-		else {
+		//if(path==str)
+		//	file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME);
+		file = new File(Environment.getExternalStorageDirectory() + File.separator + path);
+		/*else {
 			file = new File(Environment.getExternalStorageDirectory() + File.separator + FILENAME2);
-		}
+		}*/
 		try{
 			file.createNewFile();
-			OutputStream fo = new FileOutputStream(file);              
-			fo.write(path.getBytes());
+			OutputStream fo = new FileOutputStream(file);
+			if(path.startsWith(FILENAME))
+				fo.write(str.getBytes());
+			else
+				fo.write(pts.getBytes());
 			fo.close();
 		}
 		catch(IOException e){
