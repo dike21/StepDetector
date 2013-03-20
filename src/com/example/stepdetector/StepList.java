@@ -7,7 +7,7 @@ public class StepList {
 	private float min, max, lastA;
 	private long minTime, maxTime, lastTime;
 	private static final int MAX_STEP_DURATION = 1000;
-	private static final float MIN_DELTA_A = 0.5f;
+	private static final float MIN_DELTA_A = 0.6f;
 	private static final int MAX_DELTA_A = 20;
 	private static final int MIN_STEP_DURATION = 400;
 
